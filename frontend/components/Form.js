@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import * as yup from 'yup'
 
-// 👇 Here are the validation errors you will use with Yup.
 const validationErrors = {
   fullNameTooShort: 'full name must be at least 3 characters',
   fullNameTooLong: 'full name must be at most 20 characters',
   sizeIncorrect: 'size must be S or M or L'
 }
 
-// 👇 Here you will create your schema.
 const allowedNumbers = [1, "1", 2, "2", 3, "3", 4, "4", 5, "5"]
 const schema = yup.object().shape({
   fullName: yup
@@ -26,7 +24,7 @@ const schema = yup.object().shape({
     .array()
     .of(yup.number().oneOf(allowedNumbers))
 })
-// 👇 This array could help you construct your checkboxes using .map in the JSX.
+
 const toppings = [
   { topping_id: '1', text: 'Pepperoni' },
   { topping_id: '2', text: 'Green Peppers' },
@@ -47,8 +45,20 @@ export default function Form() {
   const [failureMsg, setFailureMsg] = useState('')
   const [disabled, setIsDisabled] = useState(true)
 
+  const onChange = (evt) => {
+    let { type, name, checked, value } = evt.target
+    if (type === "checkbox") {
+      value = checked
+    }
+    setValues({ ...values, [name]: value })
+  }
+
+  const onSubmit = (evt) => {
+    evt.preventDefault()
+  }
+
   return (
-    <form>
+    <form onSubmit={onSubmit}>
       <h2>Order Your Pizza</h2>
       {successMsg && <div className='success'>{successMsg}</div>}
       {failureMsg && <div className='failure'>{failureMsg}</div>}
@@ -56,7 +66,7 @@ export default function Form() {
       <div className="input-group">
         <div>
           <label htmlFor="fullName">Full Name</label><br />
-          <input placeholder="Type full name" id="fullName" type="text" />
+          <input value={values.fullName} onChange={onChange} name="fullName" placeholder="Type full name" id="fullName" type="text" />
         </div>
         {true && <div className='error'>Bad value</div>}
       </div>
@@ -64,9 +74,11 @@ export default function Form() {
       <div className="input-group">
         <div>
           <label htmlFor="size">Size</label><br />
-          <select id="size">
+          <select value={values.size} onChange={onChange} id="size" name="size">
             <option value="">----Choose Size----</option>
-            {/* Fill out the missing options */}
+            <option value="S">Small</option>
+            <option value="M">Medium</option>
+            <option value="L">Large</option>
           </select>
         </div>
         {true && <div className='error'>Bad value</div>}
@@ -80,6 +92,8 @@ export default function Form() {
               <input
                 name={text}
                 type="checkbox"
+                checked={!!values.toppings.find(topping => parseInt(topping.topping_id) === topping_id)}
+                onChange={onChange}
               />
               {text}<br />
             </label>

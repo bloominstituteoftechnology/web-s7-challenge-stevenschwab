@@ -36,7 +36,7 @@ const toppings = [
 const initialValues = () => ({
   fullName: '',
   size: '',
-  toppings: [1],
+  toppings: ['1'],
 })
 
 export default function Form() {
@@ -46,9 +46,15 @@ export default function Form() {
   const [disabled, setIsDisabled] = useState(true)
 
   const onChange = (evt) => {
-    let { type, name, checked, value } = evt.target
+    console.log(evt.target)
+    let { id, type, name, checked, value } = evt.target
     if (type === "checkbox") {
-      value = checked
+      if (checked) {
+        value = [ ...values.toppings, id]
+      } else {
+        value = values.toppings.filter(topping => topping !== id)
+      }
+      name = 'toppings'
     }
     setValues({ ...values, [name]: value })
   }
@@ -90,9 +96,10 @@ export default function Form() {
           return (
             <label key={topping_id}>
               <input
+                id={topping_id}
                 name={text}
                 type="checkbox"
-                checked={!!values.toppings.find(topping => parseInt(topping.topping_id) === topping_id)}
+                checked={values.toppings.indexOf(topping_id) !== -1}
                 onChange={onChange}
               />
               {text}<br />

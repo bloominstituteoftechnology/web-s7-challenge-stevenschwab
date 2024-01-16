@@ -35,12 +35,23 @@ const toppings = [
   { topping_id: '5', text: 'Ham' },
 ]
 
+const initialValues = () => ({
+  fullName: '',
+  size: '',
+  toppings: [1],
+})
+
 export default function Form() {
+  const [values, setValues] = useState(initialValues())
+  const [successMsg, setSuccessMsg] = useState('')
+  const [failureMsg, setFailureMsg] = useState('')
+  const [disabled, setIsDisabled] = useState(true)
+
   return (
     <form>
       <h2>Order Your Pizza</h2>
-      {true && <div className='success'>Thank you for your order!</div>}
-      {true && <div className='failure'>Something went wrong</div>}
+      {successMsg && <div className='success'>{successMsg}</div>}
+      {failureMsg && <div className='failure'>{failureMsg}</div>}
 
       <div className="input-group">
         <div>
@@ -62,17 +73,20 @@ export default function Form() {
       </div>
 
       <div className="input-group">
-        {/* 👇 Maybe you could generate the checkboxes dynamically */}
-        <label key="1">
-          <input
-            name="Pepperoni"
-            type="checkbox"
-          />
-          Pepperoni<br />
-        </label>
+        { toppings.map(topping => {
+          const { topping_id, text} = topping
+          return (
+            <label key={topping_id}>
+              <input
+                name={text}
+                type="checkbox"
+              />
+              {text}<br />
+            </label>
+          )
+        })}
       </div>
-      {/* 👇 Make sure the submit stays disabled until the form validates! */}
-      <input type="submit" />
+      <input type="submit" disabled={disabled}/>
     </form>
   )
 }

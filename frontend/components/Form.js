@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import * as yup from 'yup'
+import axios from 'axios'
 
 const validationErrors = {
   fullNameTooShort: 'full name must be at least 3 characters',
@@ -36,17 +37,40 @@ const toppings = [
 const initialValues = () => ({
   fullName: '',
   size: '',
-  toppings: ['1'],
+  toppings: [],
+})
+
+const initialErrors = () => ({
+  fullName: '',
+  size: ''
 })
 
 export default function Form() {
   const [values, setValues] = useState(initialValues())
-  const [successMsg, setSuccessMsg] = useState('')
-  const [failureMsg, setFailureMsg] = useState('')
+  const [errors, setErrors] = useState(initialErrors())
+  const [success, setSuccess] = useState()
+  const [failure, setFailure] = useState()
   const [disabled, setIsDisabled] = useState(true)
 
+  useEffect(() => {
+    schema.isValid(values).then((isValid) => {
+      setIsDisabled(!isValid)
+    })
+  }, [values])
+
+  const validate = (name, value) => {
+    yup
+      .reach(schema, name)
+      .validate(value)
+      .then(() => {
+        setErrors({ ...errors, [name]: "" })
+      })
+      .catch((err) => {
+        setErrors({ ...errors, [name]: err.errors[0] })
+      })
+  }
+
   const onChange = (evt) => {
-    console.log(evt.target)
     let { id, type, name, checked, value } = evt.target
     if (type === "checkbox") {
       if (checked) {
@@ -56,25 +80,37 @@ export default function Form() {
       }
       name = 'toppings'
     }
+    validate(name, value)
     setValues({ ...values, [name]: value })
   }
 
   const onSubmit = (evt) => {
     evt.preventDefault()
+    setIsDisabled(true)
+    axios.post("http://localhost:9009/api/order", values)
+      .then((res) => {
+        setValues(initialValues())
+        setSuccess(res.data.message)
+        setFailure("")
+      })
+      .catch(err => {
+        setFailure(err.response.data.message)
+        setSuccess("")
+      })
   }
 
   return (
     <form onSubmit={onSubmit}>
       <h2>Order Your Pizza</h2>
-      {successMsg && <div className='success'>{successMsg}</div>}
-      {failureMsg && <div className='failure'>{failureMsg}</div>}
+      {success && <div className='success'>{success}</div>}
+      {failure && <div className='failure'>{failure}</div>}
 
       <div className="input-group">
         <div>
           <label htmlFor="fullName">Full Name</label><br />
           <input value={values.fullName} onChange={onChange} name="fullName" placeholder="Type full name" id="fullName" type="text" />
         </div>
-        {true && <div className='error'>Bad value</div>}
+        {errors.fullName && <div className='error'>{errors.fullName}</div>}
       </div>
 
       <div className="input-group">
@@ -87,7 +123,7 @@ export default function Form() {
             <option value="L">Large</option>
           </select>
         </div>
-        {true && <div className='error'>Bad value</div>}
+        {errors.size && <div className='error'>{errors.size}</div>}
       </div>
 
       <div className="input-group">

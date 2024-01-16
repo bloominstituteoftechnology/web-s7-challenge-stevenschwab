@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import * as yup from 'yup'
 
 // 👇 Here are the validation errors you will use with Yup.
 const validationErrors = {
@@ -8,7 +9,23 @@ const validationErrors = {
 }
 
 // 👇 Here you will create your schema.
-
+const allowedNumbers = [1, "1", 2, "2", 3, "3", 4, "4", 5, "5"]
+const schema = yup.object().shape({
+  fullName: yup
+    .string()
+    .required()
+    .trim()
+    .min(3, validationErrors.fullNameTooShort)
+    .max(20, validationErrors.fullNameTooLong),
+  size: yup
+    .string()
+    .required()
+    .trim()
+    .oneOf(["S", "M", "L"], validationErrors.sizeIncorrect),
+  toppings: yup
+    .array()
+    .of(yup.number().oneOf(allowedNumbers))
+})
 // 👇 This array could help you construct your checkboxes using .map in the JSX.
 const toppings = [
   { topping_id: '1', text: 'Pepperoni' },
